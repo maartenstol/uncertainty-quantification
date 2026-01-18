@@ -1,8 +1,5 @@
 # Hackathon - Uncertainty Quantification in Predictive Maintenance
 
----
-
-
 ## 1. Context and Learning Objectives
 
 ### Context
@@ -20,6 +17,8 @@ Additionally, since real-world relational data on pavement asset management is o
 * **Distinguish Uncertainties:** Participants must distinguish between *Aleatoric Uncertainty* (inherent sensor noise or ambiguity) and *Epistemic Uncertainty* (model ignorance due to lack of data).
 * **Risk-Aware Decision Making:** Move beyond minimizing MSE/Accuracy. The goal is to minimize *financial risk* by using uncertainty to inform maintenance decisions.
 * **Methodological Comparison:** Contrast theoretical Bayesian purity against the advantages of more pragmatic or scalable methods, for example, Gaussian Processes versus Ensemble-based methods.
+
+
 
 ## 2. The Dataset: Modified NASA Turbofan Data
 
@@ -65,6 +64,8 @@ We provide four distinct scenarios (FD001–FD004) that represent increasing lev
 * **Features (X):** Operational Settings (op1-op3) + 21 Sensor Readings (s1-s21).
 * **Target (y):** Remaining Useful Life (RUL).
 
+
+
 ## 3. Team Tracks - The Showdown
 
 The group will be split into two tracks to facilitate a debate on "Exactness vs. Expressivity". Methods and tooling are suggestions that have gone through a mild vetting process.
@@ -84,6 +85,8 @@ On our particular problem format, this split is motivated by what we hope to lea
 * **Method:** Deep Ensembles (training 5+ independent models) or Monte Carlo Dropout.
 * **Hypothesis:** Neural Networks offer superior expressivity for complex functions, but their uncertainty estimates are often uncalibrated (overconfident).
 * **Tooling:** Standard `torch.nn` modules.
+
+
 
 ## 4. The Afternoon Challenge - The Maintenance Portfolio Game
 
