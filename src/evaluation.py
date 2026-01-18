@@ -3,17 +3,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix
 
 class MaintenanceScorer:
     def __init__(self, t=30, f=1000, r=50, w=1.25, initial_budget=100000):
         """
-        Args:
-            t (int): Danger threshold (cycles). RUL <= t is a Failure.
-            f (float): Cost of Failure (False Negative).
-            r (float): Cost of Repair (Action).
-            w (float): Waste factor (penalty for early repair).
-            initial_budget (float): Starting credits for the game.
+        The Official Hackathon Scorer.
+        
+        Parameters:
+        -----------
+        t : int (default=30)
+            The "Danger Threshold". Engines with RUL <= t are considered failing.
+        f : float (default=1000)
+            Failure Cost. Penalty for missing a failing engine (False Negative).
+        r : float (default=50)
+            Repair Cost. Fixed cost for any maintenance action.
+        w : float (default=1.25)
+            Waste Factor. Penalty multiplier for repairing healthy engines too early.
+            Cost = R + W * (Remaining_RUL - T)
+        initial_budget : float (default=100000)
+            Starting credits for the team.
         """
         self.T = t
         self.F = f
@@ -23,43 +31,37 @@ class MaintenanceScorer:
 
     def calculate_costs(self, y_true_rul, y_action):
         """
-        Calculates the detailed cost breakdown for a set of decisions.
+        Calculates the financial outcome of a set of maintenance decisions.
         
         Args:
-            y_true_rul (array): The actual RUL of the engines.
-            y_action (array): 1 for ACT (Repair), 0 for PASS (Do Nothing).
+            y_true_rul (array-like): True Remaining Useful Life (RUL) values.
+            y_action (array-like): Binary decisions (1 = Repair, 0 = Do Nothing).
             
         Returns:
-            dict: Detailed stats (total_cost, final_budget, confusion_breakdown)
+            dict: Detailed performance metrics including total cost and ROI.
         """
         y_true_rul = np.array(y_true_rul)
         y_action = np.array(y_action)
         
-        # 1. Determine True Class (Needs Repair?)
-        # Positive (1) = Needs Repair (RUL <= T)
-        # Negative (0) = Healthy (RUL > T)
+        # 1. Determine True Class (1 = Needs Repair, 0 = Healthy)
         y_true_class = (y_true_rul <= self.T).astype(int)
         
         # 2. Calculate Costs per outcome
         costs = np.zeros_like(y_true_rul, dtype=float)
         
-        # Scenario: True Positive (Correct Repair)
-        # Decision: 1, Truth: 1. Cost = R
+        # True Positive (Correct Repair): Just the fixed repair cost
         mask_tp = (y_action == 1) & (y_true_class == 1)
         costs[mask_tp] = self.R
         
-        # Scenario: False Negative (Failure / Missed Detection)
-        # Decision: 0, Truth: 1. Cost = F
+        # False Negative (Failure): The heavy failure penalty
         mask_fn = (y_action == 0) & (y_true_class == 1)
         costs[mask_fn] = self.F
         
-        # Scenario: True Negative (Correct Pass)
-        # Decision: 0, Truth: 0. Cost = 0
+        # True Negative (Correct Pass): Zero cost
         mask_tn = (y_action == 0) & (y_true_class == 0)
         costs[mask_tn] = 0
         
-        # Scenario: False Positive (Early Repair / Waste)
-        # Decision: 1, Truth: 0. Cost = R + W * (RUL - T)
+        # False Positive (Early Repair/Waste): Repair cost + Waste penalty
         mask_fp = (y_action == 1) & (y_true_class == 0)
         wasted_rul = np.maximum(0, y_true_rul[mask_fp] - self.T)
         costs[mask_fp] = self.R + (self.W * wasted_rul)
@@ -76,15 +78,15 @@ class MaintenanceScorer:
                 "TN_count": np.sum(mask_tn), "TN_cost": np.sum(costs[mask_tn]),
                 "FP_count": np.sum(mask_fp), "FP_cost": np.sum(costs[mask_fp])
             },
-            "y_true_class": y_true_class # For confusion matrix plotting
+            "y_true_class": y_true_class
         }
 
     def plot_results(self, y_true_rul, y_action):
-        """Generates a visual summary of the game results."""
+        """Generates the Confusion Matrix and Cost Matrix plots."""
         res = self.calculate_costs(y_true_rul, y_action)
         bd = res['breakdown']
         
-        # Confusion Matrix Data
+        # Prepare Matrix Data (Row=Truth, Col=Pred)
         cm = np.array([
             [bd['TN_count'], bd['FP_count']],
             [bd['FN_count'], bd['TP_count']]
@@ -98,23 +100,23 @@ class MaintenanceScorer:
         # Plotting
         fig, axes = plt.subplots(1, 2, figsize=(14, 5))
         
-        # 1. Count Matrix
+        # 1. Standard Confusion Matrix (Counts)
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=axes[0], cbar=False,
                     xticklabels=['Pass', 'Act'], yticklabels=['Healthy', 'Failing'])
-        axes[0].set_title("Decision Counts (Confusion Matrix)")
+        axes[0].set_title("Decision Counts")
         axes[0].set_ylabel("True State")
         axes[0].set_xlabel("Model Decision")
         
-        # 2. Cost Matrix
-        # Custom annotations for the cost matrix
+        # 2. Cost Matrix (Financials)
+        # Custom labels with costs
         labels = np.array([
-            [f"Correct Pass\nCost: {int(cost_cm[0,0])}", f"Early Repair (Waste)\nCost: {int(cost_cm[0,1])}"],
-            [f"FAILURE\nCost: {int(cost_cm[1,0])}", f"Correct Repair\nCost: {int(cost_cm[1,1])}"]
+            [f"Correct Pass\n$0", f"Early Repair\n${int(cost_cm[0,1]):,}"],
+            [f"FAILURE\n${int(cost_cm[1,0]):,}", f"Correct Repair\n${int(cost_cm[1,1]):,}"]
         ])
         
         sns.heatmap(cost_cm, annot=labels, fmt='', cmap='Reds', ax=axes[1], cbar=False,
                     xticklabels=['Pass', 'Act'], yticklabels=['Healthy', 'Failing'])
-        axes[1].set_title(f"Financial Impact\nRemaining Budget: {int(res['final_budget'])}")
+        axes[1].set_title(f"Financial Impact\nRemaining Budget: ${int(res['final_budget']):,}")
         axes[1].set_xlabel("Model Decision")
         
         plt.tight_layout()
@@ -122,28 +124,21 @@ class MaintenanceScorer:
         
         return res
 
-# --- Example Usage ---
 if __name__ == "__main__":
-    # Test with dummy data
-    scorer = MaintenanceScorer(t=30, f=1000, r=50, w=1.25)
+    # Self-test when running this file directly
+    print("Running MaintenanceScorer Test...")
+    scorer = MaintenanceScorer()
     
-    # Simulate 100 engines
-    # 85 Healthy (RUL=100), 15 Failing (RUL=10)
-    rul = np.concatenate([np.full(85, 100), np.full(15, 10)])
+    # Fake data: 10 engines. 2 are failing (RUL=10), 8 are healthy (RUL=100)
+    fake_rul = np.array([10, 10, 100, 100, 100, 100, 100, 100, 100, 100])
     
-    # 1. Lazy Strategy (Pass All)
-    actions_lazy = np.zeros(100)
-    print("\n--- Lazy Strategy ---")
-    res = scorer.calculate_costs(rul, actions_lazy)
-    print(f"Cost: {res['total_cost']}")
+    # 1. Perfect Strategy
+    print("\n--- Test 1: Perfect Strategy ---")
+    perfect_actions = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0] 
+    scorer.plot_results(fake_rul, perfect_actions)
     
-    # 2. Paranoid Strategy (Act All)
-    actions_paranoid = np.ones(100)
-    print("\n--- Paranoid Strategy ---")
-    res = scorer.calculate_costs(rul, actions_paranoid)
-    print(f"Cost: {res['total_cost']}")
-    
-    # 3. Random Strategy
-    actions_rnd = np.random.randint(0, 2, 100)
-    print("\n--- Random Strategy (Plot) ---")
-    scorer.plot_results(rul, actions_rnd)
+    # 2. Lazy Strategy (Misses the failures)
+    print("\n--- Test 2: Lazy Strategy ---")
+    lazy_actions = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    res = scorer.calculate_costs(fake_rul, lazy_actions)
+    print(f"Lazy Cost: ${res['total_cost']} (Expected: 2000)")
