@@ -1,8 +1,5 @@
-# Hackathon - Uncertainty Quantification
+# Hackathon - Uncertainty Quantification in Predictive Maintenance
 
-# in Predictive Maintenance
-
-*20260123 - BrainCreators, Maarten Stol*
 ---
 
 
