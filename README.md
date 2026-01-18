@@ -126,13 +126,34 @@ Teams start with a hypothetical budget and pay all costs incurred on the test se
 * A deterministic model predicting RUL=35 (Safe) might miss a 10% risk of failure. The expected cost of passing (0.10 * 1000 = 100) exceeds the repair cost (50), but the deterministic model will pass and eventually incur catastrophe.
 * A calibrated Bayesian model will detect the tail risk and choose to repair, paying 50 to save an expected 100.
 
-### Evaluation on the Hidden Test Sets
+### Evaluation Strategy: The Stress Test Matrix
 
-Models trained on FD001 will be evaluated on three distinct slices to test different types of uncertainty:
+Since the goal is to spark debate on model robustness, we will not rely on a single leaderboard. Instead, we perform a **Cross-Scenario Evaluation** to see how models behave when specific assumptions are violated.
 
-1.  **IID Slice (FD001 Test):** Standard test set. Checks basic model accuracy.
-2.  **Aleatoric Slice (FD003 Test):** Contains multi-modal faults. Tests if the model correctly widens its confidence intervals when the cause of failure is ambiguous.
-3.  **Epistemic Slice (FD002 Test):** Contains operating conditions (e.g., high altitude) never seen during training. Tests if the model "knows what it doesn't know" and flags high uncertainty, or if it arrogantly predicts a wrong value.
+We evaluate models in three tiers:
+
+#### Tier 1: Baseline Performance (Self-Evaluation)
+* **Task:** Train on FD00X $\rightarrow$ Test on FD00X.
+* **Goal:** Establish that the model actually learned the task. A model that fails here cannot be evaluated further.
+* **Metric:** Cost Matrix Score (Remaining Budget).
+
+#### Tier 2: The Ambiguity Test (Aleatoric Stress)
+* **Task:** Train on Single-Fault data $\rightarrow$ Test on Multi-Fault data.
+    * *FD001 Model evaluated on FD003 Test Set*
+    * *FD002 Model evaluated on FD004 Test Set*
+* **The Challenge:** The operating conditions are identical (no domain shift), but the *cause* of failure is now ambiguous (Fan failure vs. Compressor failure).
+* **UQ Question:** Does the model widen its predictive interval to account for this inherent ambiguity, or does it confidently predict the wrong failure mode?
+
+#### Tier 3: The Knowledge Test (Epistemic Stress)
+* **Task:** Train on Single-Regime data $\rightarrow$ Test on Multi-Regime data.
+    * *FD001 Model evaluated on FD002 Test Set*
+* **The Challenge:** The fault mode is identical, but the *operating conditions* (Altitude, Speed) change drastically. The model has never seen engines flying at 30,000ft.
+* **UQ Question:** Does the model recognize "I have never seen this data before" and flag high uncertainty (Pass), or does it blindly extrapolate (Act and Fail)?
+
+### Ranking & Debate
+There will be no single winner. Instead, we will rank teams on each Tier separately. 
+* *Winner of Tier 1:* Best Engineer.
+* *Winner of Tier 2/3:* Best Risk Manager.
 
 If team and player rankings differ according to how models are evaluated, winners will be decided by heated debate.
 
