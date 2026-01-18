@@ -130,25 +130,24 @@ Teams start with a hypothetical budget and pay all costs incurred on the test se
 
 Since the goal is to spark debate on model robustness, we will not rely on a single leaderboard. Instead, we perform a **Cross-Scenario Evaluation** to see how models behave when specific assumptions are violated.
 
-We evaluate models in three tiers:
+We evaluate models in three tiers.
 
-#### Tier 1: Baseline Performance (Self-Evaluation)
+#### Tier 1: The Baseline (Sanity Check)
 * **Task:** Train on FD00X $\rightarrow$ Test on FD00X.
-* **Goal:** Establish that the model actually learned the task. A model that fails here cannot be evaluated further.
+* **Goal:** Establish that the model actually learned the task. 
 * **Metric:** Cost Matrix Score (Remaining Budget).
 
-#### Tier 2: The Ambiguity Test (Aleatoric Stress)
-* **Task:** Train on Single-Fault data $\rightarrow$ Test on Multi-Fault data.
-    * *FD001 Model evaluated on FD003 Test Set*
-    * *FD002 Model evaluated on FD004 Test Set*
-* **The Challenge:** The operating conditions are identical (no domain shift), but the *cause* of failure is now ambiguous (Fan failure vs. Compressor failure).
-* **UQ Question:** Does the model widen its predictive interval to account for this inherent ambiguity, or does it confidently predict the wrong failure mode?
+#### Tier 2: The Ambiguity Test (Aleatoric Uncertainty)
+* **Task:** Train on Single-Fault (FD001) $\rightarrow$ Test on Multi-Fault (FD003).
+* **The Situation:** The operating conditions are familiar (Sea Level), so the inputs $X$ look normal. However, in the test set, an engine might be failing due to a Fan issue OR a Compressor issue.
+* **The Uncertainty:** The model lacks the "Fault Code" input. It faces **Irreducible Uncertainty**: identical sensor readings now map to different possible RULs.
+* **The Test:** Does the model admit "I can't distinguish between these two failures" (high aleatoric uncertainty), or does it guess one and get it wrong?
 
-#### Tier 3: The Knowledge Test (Epistemic Stress)
-* **Task:** Train on Single-Regime data $\rightarrow$ Test on Multi-Regime data.
-    * *FD001 Model evaluated on FD002 Test Set*
-* **The Challenge:** The fault mode is identical, but the *operating conditions* (Altitude, Speed) change drastically. The model has never seen engines flying at 30,000ft.
-* **UQ Question:** Does the model recognize "I have never seen this data before" and flag high uncertainty (Pass), or does it blindly extrapolate (Act and Fail)?
+#### Tier 3: The Novelty Test (Epistemic Uncertainty)
+* **Task:** Train on Single-Regime (FD001) $\rightarrow$ Test on Multi-Regime (FD002).
+* **The Situation:** The fault mode is familiar, but the environment is alien. The test set contains engines flying at altitudes (30,000ft) the model has never seen. The input $X$ is **Out-of-Distribution**.
+* **The Uncertainty:** The model is effectively blind. It faces **Reducible Uncertainty** (it simply lacks training data here).
+* **The Test:** Does the model recognize "I have no idea where I am" (high epistemic uncertainty) and PASS, or does it blindly extrapolate and ACT?
 
 ### Ranking & Debate
 There will be no single winner. Instead, we will rank teams on each Tier separately. 
