@@ -6,45 +6,6 @@
 *20260123  \- BrainCreators, Maarten Stol*   
 ---
 
-[1\. Context and Learning Objectives](#1.-context-and-learning-objectives)
-
-[Context](#context)
-
-[Learning Objectives](#learning-objectives)
-
-[2\. The Dataset: modified NASA Turbofan data](#2.-the-dataset:-modified-nasa-turbofan-data)
-
-[NASA Turbofan Engine Degradation](#nasa-turbofan-engine-degradation)
-
-[Analogies with pavement condition](#analogies-with-pavement-condition)
-
-[Dataset Modifications](#dataset-modifications)
-
-[Test Set Modifications](#test-set-modifications)
-
-[3\. Team Tracks \- The Showdown](#3.-team-tracks---the-showdown)
-
-[Track A: The “Purists” or Exact Bayesians](#track-a:-the-“purists”-or-exact-bayesians)
-
-[Track B: The “Pragmatists” or Approximate Bayesians](#track-b:-the-“pragmatists”-or-approximate-bayesians)
-
-[4\. The Afternoon Challenge \-  The Maintenance Portfolio Game](#4.-the-afternoon-challenge---the-maintenance-portfolio-game)
-
-[The Scenario](#the-scenario)
-
-[The Decision](#the-decision)
-
-[The Cost Matrix](#the-cost-matrix)
-
-[The Winning Condition](#the-winning-condition)
-
-[Why UQ Wins](#why-uq-wins)
-
-[Choice of Cost Matrix Parameters](#choice-of-cost-matrix-parameters)
-
-[Evaluation on the Modified Test Sets](#evaluation-on-the-modified-test-sets)
-
----
 
 ## 1\. Context and Learning Objectives {#1.-context-and-learning-objectives}
 
