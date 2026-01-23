@@ -112,19 +112,18 @@ The decision is analogous to that of pavement repair based on a single observati
 
 The scoring simulates the economic reality where failure is catastrophic, but early repair is wasteful.
 
-* **T (Threshold):** The "danger zone". Engines with RUL < 30 must be repaired.
+* **T (Threshold):** **30** The "danger zone". Engines with RUL < 30 must be repaired.
 * **F (Failure Cost):** **1000 credits.** The penalty for PASSING on a failing asset.
 * **R (Repair Cost):** **50 credits.** The fixed cost for every decision to ACT.
-* **W (Waste Factor):** **0.5.** A penalty multiplier for repairing healthy assets too early.
+* **W (Waste Factor):** **1.25.** A penalty multiplier for repairing healthy assets too early.
 
 ### The Winning Condition
 
 Teams start with a hypothetical budget and pay all costs incurred on the test set. The team with the highest remaining budget wins.
 
-### Why UQ Wins
+### Why UQ is relevant for winning
 
-* A deterministic model predicting RUL=35 (Safe) might miss a 10% risk of failure. The expected cost of passing (0.10 * 1000 = 100) exceeds the repair cost (50), but the deterministic model will pass and eventually incur catastrophe.
-* A calibrated Bayesian model will detect the tail risk and choose to repair, paying 50 to save an expected 100.
+* ..to be discuessed 
 
 ### Evaluation Strategy: The Stress Test Matrix
 
